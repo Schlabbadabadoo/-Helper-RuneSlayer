@@ -1,0 +1,106 @@
+local Rune = {}
+
+local UserInputService = game:GetService("UserInputService")
+local CollectionService = game:GetService("CollectionService")
+local RunService = game:GetService("RunService")
+local LogService = game:GetService("LogService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local RemoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+local ClientModules = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("ClientModules")
+local Mouse = LocalPlayer:GetMouse()
+local BoolValues = Character:WaitForChild("BoolValues")
+local Map = workspace:WaitForChild("Map")
+local Modules = {}
+
+for _, module in pairs(ReplicatedStorage.Modules:GetChildren()) do
+    Modules[module.Name] = require(module)
+end
+
+for _, module in pairs(ClientModules:GetChildren()) do
+    local mod = require(module)
+    if mod.Client then
+        pcall(function()
+            Modules[module.Name] = mod.Client(LocalPlayer, Character)
+        end)
+    end
+end
+
+function Rune.MouseEvent(event)
+    assert(typeof(event) == "string", "Event must be a string")
+    LocalPlayer.Character.CharacterHandler.Input.Events.MouseInput:Fire({ Config = event })
+end
+
+function Rune.MouseInput(event)
+    assert(typeof(event) == "string", "Event must be a string")
+    Modules.Network.connect("MouseInput", "Fire", Character, { Config = event })
+end
+
+function Rune.MasterSignal(event)
+    assert(typeof(event) == "string", "Event must be a string")
+    Modules.Network.connect("MasterEvent", "FireServer", Character, { Config = event })
+end
+
+function Rune.Interact(Object, Action)
+    assert(typeof(Object) == "Instance", "Object must be an Instance")
+    assert(typeof(Action) == "string", "Action must be a string")
+    LocalPlayer.Character.CharacterHandler.Input.Events.Interact:FireServer({
+        player = LocalPlayer,
+        Object = Object,
+        Action = Action
+    })
+end
+
+function Rune.Smelt(Amount, Item, Into)
+    assert(typeof(Amount) == "number", "Amount must be a number")
+    assert(typeof(Item) == "string", "Item must be a string")
+    assert(typeof(Into) == "string", "Into must be a string")
+    LocalPlayer.PlayerGui:FindFirstChild("CraftingGui").LocalScript.RemoteEvent:FireServer({
+        AmountToCraft = Amount,
+        SelectedItem = {
+            Materials = {{ Name = Item, Amount = Amount }},
+            ToolTip = "",
+            Station = "Smelter",
+            Name = Into
+        }
+    })
+end
+
+function Rune.NearestInteract()
+    local textLabel = LocalPlayer.PlayerGui:FindFirstChild("GUI") and LocalPlayer.PlayerGui.GUI:FindFirstChild("Interact") and LocalPlayer.PlayerGui.GUI.Interact:FindFirstChild("TextLabel")
+    if not textLabel or not textLabel:IsA("TextLabel") then return end
+    local action = textLabel.Text:match("%[E%] %- (%S+)")
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not action or not root then return end
+    local nearest, minDist = nil, 10
+    for _, parent in ipairs({workspace:FindFirstChild("Harvestable"), workspace:FindFirstChild("Effects") and workspace.Effects:FindFirstChild("NPCS")}) do
+        if parent then
+            for _, obj in ipairs(parent:GetChildren()) do
+                if (obj:IsA("Model") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) and not obj:IsDescendantOf(LocalPlayer.Character) then
+                    local part = obj:IsA("Model") and obj.PrimaryPart or obj
+                    local dist = part and (root.Position - part.Position).Magnitude
+                    if dist and dist < minDist then
+                        nearest, minDist = obj, dist
+                    end
+                end
+            end
+        end
+    end
+    if nearest then
+        if action == "Talk" then action = "NPC" end
+        Rune.Interact(nearest, action)
+        warn("Interacting with:", nearest:GetFullName(), "Action:", action)
+    end
+end
+
+function Rune.Parry()
+    Rune.MasterSignal("Block")
+    Rune.MasterSignal("StopBlock")
+end
+
+return Rune
