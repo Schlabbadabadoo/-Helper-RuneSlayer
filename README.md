@@ -11,7 +11,7 @@ local Rune = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakench
 ```
 <br/>
 
-## 📜 Usage
+# 📜 Usage
 ```lua
 local Map = workspace:WaitForChild("Map")
 local Rune = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/-Helper-RuneSlayer/refs/heads/main/RuneLibrary"))()
