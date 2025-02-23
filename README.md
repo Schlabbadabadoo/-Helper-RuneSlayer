@@ -4,7 +4,7 @@
 
 - Doesnt kick player when using it! further more user can actually make client do actions such as Block, Attack m1 & etc
 <br/>
-## 🔌 Installation
+# 🔌 Installation
 
 ```lua
 local Rune = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/-Helper-RuneSlayer/refs/heads/main/RuneLibrary"))()
