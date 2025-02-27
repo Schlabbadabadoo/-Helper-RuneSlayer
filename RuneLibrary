@@ -215,7 +215,7 @@ function Rune.NearestInteract()
     local root: BasePart? = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not action or not root then return end
     local nearest: Instance?, minDist: number = nil, 10
-    for _, parent in ipairs({workspace:FindFirstChild("Harvestable"), workspace:FindFirstChild("Effects") and workspace.Effects:FindFirstChild("NPCS")}) do
+    for _, parent in ipairs({workspace:FindFirstChild("Harvestable"),workspace:FindFirstChild("Alive"), workspace:FindFirstChild("Effects") and workspace.Effects:FindFirstChild("NPCS")}) do
         if parent then
             for _, obj in ipairs(parent:GetChildren()) do
                 if (obj:IsA("Model") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) and not obj:IsDescendantOf(LocalPlayer.Character) then
@@ -367,6 +367,48 @@ function Rune.LookUpinHarvest(ItemName, radius, originPosition)
 
     return nearestItem,positionstanding
 end
+
+function Rune.LookUpinMob(MobName, radius, originPosition)
+    assert(typeof(MobName) == "string", "MobName must be a string")
+    assert(typeof(radius) == "number", "Radius must be a number")
+    assert(typeof(originPosition) == "Vector3", "Expected Vector3 position")
+
+    local nearestMob = nil
+    local shortestDistance = radius
+    local mobPosition = nil
+
+    local aliveFolder = workspace:FindFirstChild("Alive")
+    if not aliveFolder then
+        warn("Alive folder not found in workspace")
+        return nil, nil
+    end
+
+    for _, mob in pairs(aliveFolder:GetChildren()) do
+        local fullName = mob.Name
+        local baseName = fullName:match("^(.-)%..*$") or fullName -- Extracts name before "."
+        
+        if baseName == MobName then
+            local position
+            if mob:IsA("Model") and mob.PrimaryPart then
+                position = mob.PrimaryPart.Position
+            elseif mob:IsA("BasePart") then
+                position = mob.Position
+            end
+
+            if position then
+                local distance = (originPosition - position).Magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    nearestMob = mob
+                    mobPosition = position
+                end
+            end
+        end
+    end
+
+    return nearestMob, mobPosition
+end
+
 
 function Rune.ServerHop()
     local HttpService = game:GetService("HttpService")
@@ -520,15 +562,24 @@ function Rune.MobNotifier(lf,ifnot)
     end
 end
 
-function Rune.LoadFairys()
-   local tp0 = Rune.TweenTo(1369.93079, 226.980194, -612.139832, 0.787976742, 4.8879027e-08, 0.615705013, 4.83843021e-10, 1, -8.00063091e-08, -0.615705013, 6.33410124e-08, 0.787976742)
-   tp0:Wait()
-   local tp1 = Rune.TweenTo(10,839.720947265625, 247.71376037597656, -1244.825439453125)
-   tp1:Wait()
-   local tp2 = Rune.TweenTo(880.40448, 248.975464, -916.14679, -0.994177043, -9.21950516e-09, 0.107758962, -2.141747e-09, 1, 6.57971171e-08, -0.107758962, 6.5183194e-08, -0.994177043)
-   tp2:Wait()
-   local tp3 = Rune.TweenTo(1567.38525, 162.760025, -1330.1333, 0.47545886, 3.1095599e-08, -0.879737973, 1.59342081e-10, 1, 3.54325493e-08, 0.879737973, -1.6986899e-08, 0.47545886)
-   tp3:Wait()
+function Rune.MobChecker(check)
+    local aliveFolder = workspace:FindFirstChild("Alive")
+    if not aliveFolder then
+        warn("Alive folder not found in workspace")
+        return nil
+    end
+    local isTable = typeof(check) == "table" 
+    local found = nil
+    for _, mob in ipairs(aliveFolder:GetChildren()) do
+        local fullName = mob.Name
+        local baseName = fullName:match("^(.-)%..*$") or fullName
+        if (isTable and table.find(check, baseName)) or (not isTable and baseName == check) then
+            Rune.PlaySound("rbxassetid://85243953582838")
+            found = true
+        end
+    end
+
+    return found
 end
 
 return Rune
