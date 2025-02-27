@@ -284,8 +284,25 @@ function Rune.getNearestMob(maxDistance)
     return nearestMob
 end
 
-function Rune.TweenTo(speed, cf)
-    tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(speed, Enum.EasingStyle.Linear)    
+function Rune.TweenTo(speed, ...)
+    local args = {...}
+    local cf
+    if typeof(args[1]) == "CFrame" then
+        cf = args[1]
+    elseif #args == 3 then
+        cf = CFrame.new(args[1], args[2], args[3])
+    elseif #args == 12 then
+        cf = CFrame.new(
+            args[1], args[2], args[3], 
+            args[4], args[5], args[6], 
+            args[7], args[8], args[9], 
+            args[10], args[11], args[12]
+        )
+    else
+        error("Invalid CFrame input. Provide either 3 (Position) or 12 (Full CFrame) numbers.")
+    end
+    local tweenService = game:GetService("TweenService")
+    local tweenInfo = TweenInfo.new(speed, Enum.EasingStyle.Linear)    
     local event = Instance.new("BindableEvent")  
     local player = game:GetService("Players").LocalPlayer
     local character = player.Character
@@ -294,12 +311,12 @@ function Rune.TweenTo(speed, cf)
         return event.Event
     end
     local hrp = character.HumanoidRootPart
-    local tween = tweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(cf)}) 
+    local tween = tweenService:Create(hrp, tweenInfo, {CFrame = cf}) 
     tween:Play()
     task.spawn(function()
         while tween.PlaybackState == Enum.PlaybackState.Playing do  
             task.wait(0.1) 
-            if (hrp.Position - cf).Magnitude <= 5 then
+            if (hrp.Position - cf.Position).Magnitude <= 5 then
                 tween:Cancel()
                 event:Fire(true) 
                 break
