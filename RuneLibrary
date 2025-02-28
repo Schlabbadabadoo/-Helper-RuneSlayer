@@ -403,7 +403,16 @@ function Rune.LookUpinMob(MobName, radius, originPosition)
         warn("Alive folder not found in workspace")
         return nil, nil
     end
-    
+    local petNames = {}
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        local playerFolder = aliveFolder:FindFirstChild(player.Name)
+        if playerFolder then
+            local pet = playerFolder:FindFirstChild("Pet")
+            if pet and pet:IsA("ObjectValue") and pet.Value then
+                petNames[pet.Value.Name] = true 
+            end
+        end
+    end
     for _, mob in pairs(aliveFolder:GetChildren()) do
         local fullName = mob.Name
         local baseName = fullName:match("^(.-)%..*$") or fullName
@@ -411,19 +420,21 @@ function Rune.LookUpinMob(MobName, radius, originPosition)
             (typeof(MobName) == "string" and baseName == MobName) or
             (typeof(MobName) == "table" and table.find(MobName, baseName)) or
             (getgenv().fairyfarm and table.find(functions.mobFarm.SelectedFairys, baseName))
-        
-        if isValidMob and mob:FindFirstChild("Pet") and mob.Pet.Value == nil then
+        if isValidMob and mob:FindFirstChild("Pet") and mob.Pet.Value == nil and not petNames[mob.Name] then
             local position = nil
             
             if mob:IsA("Model") and mob.WorldPivot then
                 position = mob.WorldPivot.Position
             elseif mob:FindFirstChild("PrimaryPart") then
                 position = mob.PrimaryPart.Position
+            elseif mob:FindFirstChild("HumanoidRootPart") then
+                position = mob:FindFirstChild("HumanoidRootPart").Position
             end
+
             if position then
                 local distance = (originPosition - position).Magnitude
                 if distance < shortestDistance then
-                    shortestDistance, nearestMob, mobPosition = distance, mob, position
+                    nearestMob, shortestDistance, mobPosition = mob, distance, position
                 end
             end
         end
@@ -431,7 +442,6 @@ function Rune.LookUpinMob(MobName, radius, originPosition)
     
     return nearestMob, mobPosition
 end
-
 function Rune.ServerHop()
     local HttpService = game:GetService("HttpService")
     local TeleportService = game:GetService("TeleportService")
