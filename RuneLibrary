@@ -209,30 +209,53 @@ function Rune.Smelt(Amount, Item, Into)
 end
 function Rune.NearestInteract()
     local event = Instance.new("BindableEvent")  
-    local textLabel: TextLabel? = LocalPlayer.PlayerGui:FindFirstChild("GUI") and LocalPlayer.PlayerGui.GUI:FindFirstChild("Interact") and LocalPlayer.PlayerGui.GUI.Interact:FindFirstChild("TextLabel")
+    local textLabel = LocalPlayer.PlayerGui:FindFirstChild("GUI") 
+        and LocalPlayer.PlayerGui.GUI:FindFirstChild("Interact") 
+        and LocalPlayer.PlayerGui.GUI.Interact:FindFirstChild("TextLabel")
+    
     if not textLabel or not textLabel:IsA("TextLabel") then return end
-    local action: string? = textLabel.Text:match("%[E%] %- (%S+)")
-    local root: BasePart? = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    local action = textLabel.Text:match("%[E%] %- (%S+)")
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not action or not root then return end
-    local nearest: Instance?, minDist: number = nil, 10
-    for _, parent in ipairs({workspace:FindFirstChild("Harvestable"),workspace:FindFirstChild("Alive"), workspace:FindFirstChild("Effects") and workspace.Effects:FindFirstChild("NPCS")}) do
+    
+    local nearest, minDist = nil, 10
+    
+    for _, parent in ipairs({
+        workspace:FindFirstChild("Harvestable"),
+        workspace:FindFirstChild("Alive"), 
+        workspace:FindFirstChild("Effects") and workspace.Effects:FindFirstChild("NPCS")
+    }) do
         if parent then
             for _, obj in ipairs(parent:GetChildren()) do
-                if (obj:IsA("Model") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) and not obj:IsDescendantOf(LocalPlayer.Character) then
-                    local part: BasePart? = obj:IsA("Model") and obj.PrimaryPart or obj
-                    local dist: number? = part and (root.Position - part.Position).Magnitude
-                    if dist and dist < minDist then
-                        nearest, minDist = obj, dist
+                if (obj:IsA("Model") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) 
+                    and not obj:IsDescendantOf(LocalPlayer.Character) then
+                    
+                    local part = obj:IsA("Model") and obj.PrimaryPart or obj
+                    local partPosition = nil
+                    
+                    if obj:IsA("Model") and obj.WorldPivot then
+                        partPosition = obj.WorldPivot.Position
+                    elseif part and (part:IsA("UnionOperation") or part:IsA("MeshPart")) and part.CFrame then
+                        partPosition = part.CFrame.Position
+                    end
+                    
+                    if partPosition then
+                        local dist = (root.Position - partPosition).Magnitude
+                        if dist < minDist then
+                            nearest, minDist = obj, dist
+                        end
                     end
                 end
             end
         end
     end
+    
     if nearest then
         if action == "Talk" then action = "NPC" end
         Rune.Interact(nearest, action)
         warn("Interacting with:", nearest:GetFullName(), "Action:", action)
-          task.spawn(function()
+        
+        task.spawn(function()
             while nearest.Parent do 
                 task.wait() 
             end
@@ -240,6 +263,7 @@ function Rune.NearestInteract()
             event:Fire(true) 
         end)
     end
+    
     return event.Event
 end
 
@@ -408,7 +432,6 @@ function Rune.LookUpinMob(MobName, radius, originPosition)
 
     return nearestMob, mobPosition
 end
-
 
 function Rune.ServerHop()
     local HttpService = game:GetService("HttpService")
