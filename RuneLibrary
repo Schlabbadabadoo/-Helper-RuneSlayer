@@ -207,6 +207,7 @@ function Rune.Smelt(Amount, Item, Into)
         }
     })
 end
+
 function Rune.NearestInteract()
     local event = Instance.new("BindableEvent")  
     local textLabel = LocalPlayer.PlayerGui:FindFirstChild("GUI") 
@@ -391,45 +392,43 @@ function Rune.LookUpinHarvest(ItemName, radius, originPosition)
 
     return nearestItem,positionstanding
 end
-
 function Rune.LookUpinMob(MobName, radius, originPosition)
-    assert(typeof(MobName) == "string", "MobName must be a string")
+    assert(typeof(MobName) == "string" or typeof(MobName) == "table", "MobName must be a string or table")
     assert(typeof(radius) == "number", "Radius must be a number")
     assert(typeof(originPosition) == "Vector3", "Expected Vector3 position")
-
-    local nearestMob = nil
-    local shortestDistance = radius
-    local mobPosition = nil
-
+    
+    local nearestMob, shortestDistance, mobPosition = nil, radius, nil
     local aliveFolder = workspace:FindFirstChild("Alive")
     if not aliveFolder then
         warn("Alive folder not found in workspace")
         return nil, nil
     end
-
+    
     for _, mob in pairs(aliveFolder:GetChildren()) do
         local fullName = mob.Name
-        local baseName = fullName:match("^(.-)%..*$") or fullName -- Extracts name before "."
+        local baseName = fullName:match("^(.-)%..*$") or fullName
+        local isValidMob = 
+            (typeof(MobName) == "string" and baseName == MobName) or
+            (typeof(MobName) == "table" and table.find(MobName, baseName)) or
+            (getgenv().fairyfarm and table.find(functions.mobFarm.SelectedFairys, baseName))
         
-        if baseName == MobName then
-            local position
-            if mob:IsA("Model") and mob.PrimaryPart then
+        if isValidMob and mob:FindFirstChild("Pet") and mob.Pet.Value == nil then
+            local position = nil
+            
+            if mob:IsA("Model") and mob.WorldPivot then
+                position = mob.WorldPivot.Position
+            elseif mob:FindFirstChild("PrimaryPart") then
                 position = mob.PrimaryPart.Position
-            elseif mob:IsA("BasePart") then
-                position = mob.Position
             end
-
             if position then
                 local distance = (originPosition - position).Magnitude
                 if distance < shortestDistance then
-                    shortestDistance = distance
-                    nearestMob = mob
-                    mobPosition = position
+                    shortestDistance, nearestMob, mobPosition = distance, mob, position
                 end
             end
         end
     end
-
+    
     return nearestMob, mobPosition
 end
 
@@ -604,5 +603,4 @@ function Rune.MobChecker(check)
 
     return found
 end
-
 return Rune
