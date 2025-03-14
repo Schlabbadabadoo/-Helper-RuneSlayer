@@ -384,29 +384,28 @@ function Rune.TweenTo(speed, ...)
     return event.Event  
 end
 
-function Rune.CustomTweenTo(maxSpeed, targetCFrame)
-    local player = game:GetService("Players").LocalPlayer
-    local character = player.Character
+function Rune.CustomTweenTo(speed, targetCFrame)
+    local character = LocalPlayer.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
-        warn("HumanoidRootPart not found")
         return
     end
 
-    local hrp = character.HumanoidRootPart
-    local startPosition = hrp.Position
-    local targetPosition = targetCFrame.Position
-    local distance = (startPosition - targetPosition).Magnitude
-    local duration = distance / maxSpeed
-    local startTime = tick()
+    local rootPart = character.HumanoidRootPart
+    local distance = (rootPart.Position - targetCFrame.Position).Magnitude
+    local duration = distance / speedtoggle
 
-    while tick() - startTime < duration do
-        local elapsedTime = tick() - startTime
-        local alpha = math.clamp(elapsedTime / duration, 0, 1)
-        hrp.CFrame = hrp.CFrame:Lerp(targetCFrame, alpha)
-        task.wait()
+    if getgenv().ActiveTween then
+        getgenv().ActiveTween:Cancel()
     end
 
-    hrp.CFrame = targetCFrame
+    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+    local tween = game:GetService("TweenService"):Create(rootPart, tweenInfo, { CFrame = targetCFrame })
+    getgenv().ActiveTween = tween
+    tween:Play()
+
+    tween.Completed:Connect(function()
+        getgenv().ActiveTween = nil
+    end)
 end
 
 function Rune.IsValidHarvest(Item)
