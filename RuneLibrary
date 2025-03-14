@@ -392,7 +392,7 @@ function Rune.CustomTweenTo(speed, targetCFrame)
 
     local rootPart = character.HumanoidRootPart
     local distance = (rootPart.Position - targetCFrame.Position).Magnitude
-    local duration = distance / speedtoggle
+    local duration = distance / speed
 
     if getgenv().ActiveTween then
         getgenv().ActiveTween:Cancel()
