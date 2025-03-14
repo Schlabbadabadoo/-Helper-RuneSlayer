@@ -7,14 +7,14 @@
 # 🔌 Installation
 
 ```lua
-local Rune = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/-Helper-RuneSlayer/refs/heads/main/RuneLibrary"))()
+local Rune = loadstring(game:HttpGet("https://raw.githubusercontent.com/Schlabbadabadoo/-Helper-RuneSlayer/refs/heads/main/RuneLibrary"))()
 ```
 <br/>
 
 # 📜 Usage
 ```lua
 local Map = workspace:WaitForChild("Map")
-local Rune = loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/-Helper-RuneSlayer/refs/heads/main/RuneLibrary"))()
+local Rune = loadstring(game:HttpGet("https://raw.githubusercontent.com/Schlabbadabadoo/-Helper-RuneSlayer/refs/heads/main/RuneLibrary"))()
 Rune.SellEvent(true)
 task.delay(1,function()
     Rune.SellEvent(false)
