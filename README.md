@@ -2,7 +2,41 @@
 
 ## ⚡ Features
 
-- Doesnt kick player when using it! further more user can actually make client do actions such as Block, Attack m1 & etc
+### General Utilities
+- **`Rune.LoopStart(name, func, interval)`**: Starts a loop that executes a function at a specified interval.
+- **`Rune.LoopStop(name)`**: Stops a running loop.
+- **`Rune.GetCharacterComponents()`**: Retrieves essential components of the player's character.
+- **`Rune.GetPlayerGui()`**: Returns the player's GUI instance.
+
+### Movement
+- **`Rune.PathfindTo(targetPosition)`**: Moves the player to a target position using pathfinding.
+- **`Rune.TweenTo(speed, ...)`**: Moves the player to a target position using `TweenService`.
+- **`Rune.CustomTweenTo(maxSpeed, targetCFrame)`**: Moves the player manually, ensuring the speed does not exceed a maximum.
+
+### Interaction
+- **`Rune.Interact(Object, Action)`**: Interacts with a specified object using a given action.
+- **`Rune.NearestInteract()`**: Finds and interacts with the nearest interactable object.
+
+### Combat
+- **`Rune.Parry()`**: Executes a parry action.
+- **`Rune.getNearestMob(maxDistance)`**: Finds the nearest mob within a specified distance.
+
+### Harvesting
+- **`Rune.IsValidHarvest(Item)`**: Checks if an item is valid for harvesting.
+- **`Rune.LookUpinHarvest(ItemName, radius, originPosition)`**: Finds the nearest harvestable item by name.
+- **`Rune.LookUpinMob(MobName, radius, originPosition)`**: Finds the nearest mob by name.
+
+### Inventory Management
+- **`Rune.RefreshInventory()`**: Refreshes the inventory cache.
+- **`Rune.WatchInventory()`**: Watches for changes in the inventory and updates the cache.
+- **`Rune.LookUpInventory(searchTerm, partialMatch)`**: Searches the inventory for items matching a term.
+- **`Rune.SellItem(itemName)`**: Sells a specific item from the inventory.
+
+### Miscellaneous
+- **`Rune.ServerHop()`**: Hops to a new server with fewer players.
+- **`Rune.PlaySound(id)`**: Plays a sound at the player's position.
+- **`Rune.MobNotifier(lf, ifnot)`**: Notifies the player when specific mobs spawn.
+- **`Rune.MobChecker(check)`**: Checks if specific mobs exist in the game.
 <br/>
 # 🔌 Installation
 
