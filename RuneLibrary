@@ -268,6 +268,38 @@ function Rune.NearestInteract()
     return event.Event
 end
 
+function Rune.PathfindTo(targetPosition)
+    local pathfindingService = game:GetService("PathfindingService")
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        warn("HumanoidRootPart not found")
+        return
+    end
+
+    local hrp = character.HumanoidRootPart
+    local path = pathfindingService:CreatePath({
+        AgentRadius = 2,
+        AgentHeight = 5,
+        AgentCanJump = true,
+        AgentJumpHeight = 10,
+        AgentMaxSlope = 45
+    })
+
+    path:ComputeAsync(hrp.Position, targetPosition)
+    if path.Status == Enum.PathStatus.Complete then
+        for _, waypoint in ipairs(path:GetWaypoints()) do
+            hrp.CFrame = CFrame.new(waypoint.Position)
+            if waypoint.Action == Enum.PathWaypointAction.Jump then
+                character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+            task.wait(0.1)
+        end
+    else
+        warn("Pathfinding failed")
+    end
+end
+
 function Rune.Parry()
     task.spawn(function()
         local success = pcall(function()
@@ -350,6 +382,31 @@ function Rune.TweenTo(speed, ...)
     end)
 
     return event.Event  
+end
+
+function Rune.CustomTweenTo(maxSpeed, targetCFrame)
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        warn("HumanoidRootPart not found")
+        return
+    end
+
+    local hrp = character.HumanoidRootPart
+    local startPosition = hrp.Position
+    local targetPosition = targetCFrame.Position
+    local distance = (startPosition - targetPosition).Magnitude
+    local duration = distance / maxSpeed
+    local startTime = tick()
+
+    while tick() - startTime < duration do
+        local elapsedTime = tick() - startTime
+        local alpha = math.clamp(elapsedTime / duration, 0, 1)
+        hrp.CFrame = hrp.CFrame:Lerp(targetCFrame, alpha)
+        task.wait()
+    end
+
+    hrp.CFrame = targetCFrame
 end
 
 function Rune.IsValidHarvest(Item)
