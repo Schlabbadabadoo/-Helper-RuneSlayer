@@ -1,4 +1,4 @@
-# Rune-Slayer Function Usage on exploit level
+# Rune-Slayer Functions
 
 ## ⚡ Features
 
@@ -87,3 +87,4 @@ end)
 ## Credits
 
 - awakenkn / https://e-z.bio/awaken
+- schlabbadabbadoo (i added like 2 or 3 functions i dont remember lol)
